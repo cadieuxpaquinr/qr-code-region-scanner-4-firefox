@@ -41,6 +41,11 @@ It cannot capture the browser's own interface, other windows, or the desktop.
 A few fully privileged pages (`about:` pages and addons.mozilla.org) cannot be captured at all;
 scanning there reports "This page cannot be captured."
 
+## Report a bug
+
+Found a problem? Please
+[open an issue on GitHub](https://github.com/cadieuxpaquinr/qr-code-region-scanner-4-firefox/issues).
+
 ## Roadmap
 
 This add-on targets Firefox only. There is no intention of porting it to Chrome,
