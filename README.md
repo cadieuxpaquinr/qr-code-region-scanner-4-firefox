@@ -6,12 +6,16 @@ and opens its URL in a new tab.
 ## Usage
 
 1. Press the keyboard shortcut (default `Ctrl+Shift+Y`) or click the toolbar button.
-2. Drag a rectangle over the QR code on the page. Press `Escape` to cancel.
+2. Drag a rectangle over the QR code. Press `Escape` to cancel.
 3. The extension decodes the QR code and:
    - opens the value in a new tab if it is an `http`/`https` URL, or
    - copies the value to the clipboard and shows a notification otherwise.
 
 If no QR code is found in the selection, a notification says so.
+
+On regular web pages the selection is drawn directly over the page. On pages Firefox does not let
+extensions draw on (its built-in PDF viewer, reader mode, and similar), the extension screenshots
+the tab and opens a small window where you make the same selection on the captured image.
 
 ## Settings
 
@@ -32,8 +36,10 @@ You can also change it from the Add-ons page gear menu, Manage Extension Shortcu
 
 ## Limitation
 
-A Firefox extension can only screenshot the visible content of the current web page.
+A Firefox extension can only screenshot the visible content of the current tab.
 It cannot capture the browser's own interface, other windows, or the desktop.
+A few fully privileged pages (`about:` pages and addons.mozilla.org) cannot be captured at all;
+scanning there reports "This page cannot be captured."
 
 ## Credits
 
