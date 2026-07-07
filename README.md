@@ -41,6 +41,11 @@ It cannot capture the browser's own interface, other windows, or the desktop.
 A few fully privileged pages (`about:` pages and addons.mozilla.org) cannot be captured at all;
 scanning there reports "This page cannot be captured."
 
+## Roadmap
+
+This add-on targets Firefox only. There is no intention of porting it to Chrome,
+Edge, Safari, or any other browser.
+
 ## Support
 
 Please do not buy me a coffee. If this add-on is useful to you, donate to the
