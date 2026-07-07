@@ -36,7 +36,10 @@
   },
   "browser_specific_settings": {
     "gecko": {
-      "id": "qr-region-scanner@local"
+      "id": "qr-region-scanner@local",
+      "data_collection_permissions": {
+        "required": ["none"]
+      }
     }
   }
 }
