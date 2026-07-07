@@ -97,26 +97,11 @@
         const sy = Math.round(rect.top * dpr);
         const sw = Math.max(1, Math.round(rect.width * dpr));
         const sh = Math.max(1, Math.round(rect.height * dpr));
-        const canvas = document.createElement("canvas");
-        canvas.width = sw;
-        canvas.height = sh;
-        const ctx = canvas.getContext("2d");
-        ctx.drawImage(img, sx, sy, sw, sh, 0, 0, sw, sh);
-        const imageData = ctx.getImageData(0, 0, sw, sh);
-        resolve(jsQR(imageData.data, sw, sh));
+        resolve(QRScanCore.decodeRegion(img, sx, sy, sw, sh));
       };
       img.onerror = () => reject(new Error("image load failed"));
       img.src = dataUrl;
     });
-  }
-
-  function isHttpUrl(text) {
-    try {
-      const u = new URL(text);
-      return u.protocol === "http:" || u.protocol === "https:";
-    } catch (e) {
-      return false;
-    }
   }
 
   function handleResult(result) {
@@ -125,29 +110,12 @@
       return;
     }
     const text = result.data;
-    if (isHttpUrl(text)) {
+    if (QRScanCore.isHttpUrl(text)) {
       browser.runtime.sendMessage({ type: "open-url", url: text });
     } else {
-      const copied = copyText(text);
+      const copied = QRScanCore.copyText(text);
       report(copied ? "Copied to clipboard: " + text : "Scanned: " + text, "QR code scanned");
     }
-  }
-
-  function copyText(text) {
-    const ta = document.createElement("textarea");
-    ta.value = text;
-    ta.style.position = "fixed";
-    ta.style.opacity = "0";
-    document.body.appendChild(ta);
-    ta.select();
-    let ok = false;
-    try {
-      ok = document.execCommand("copy");
-    } catch (e) {
-      ok = false;
-    }
-    ta.remove();
-    return ok;
   }
 
   function report(message, title) {
