@@ -41,6 +41,11 @@ It cannot capture the browser's own interface, other windows, or the desktop.
 A few fully privileged pages (`about:` pages and addons.mozilla.org) cannot be captured at all;
 scanning there reports "This page cannot be captured."
 
+## Support
+
+Please do not buy me a coffee. If this add-on is useful to you, donate to the
+[Mozilla Foundation](https://www.mozillafoundation.org/en/?form=donate-header) instead.
+
 ## Credits
 
 Uses [jsQR](https://github.com/cozmo/jsQR) (MIT) for decoding, vendored in `vendor/jsqr.js`.
