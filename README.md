@@ -28,6 +28,11 @@ You can also change it from the Add-ons page gear menu, Manage Extension Shortcu
 2. Choose "This Firefox", then "Load Temporary Add-on".
 3. Select the `manifest.json` file in this folder.
 
+This add-on is currently under review on
+[addons.mozilla.org](https://addons.mozilla.org/) (Firefox Add-ons). Once approved,
+you will be able to install it from there like any other Firefox add-on, with
+automatic updates.
+
 ## Permissions
 
 - `activeTab`: capture and scan only the current tab when you trigger a scan.
