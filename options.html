@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body { font: 14px system-ui, sans-serif; margin: 16px; width: 360px; color: #1b1b2f; }
+    h1 { font-size: 16px; margin: 0 0 12px; }
+    label { display: block; margin-bottom: 6px; font-weight: 600; }
+    #shortcut { width: 100%; box-sizing: border-box; padding: 8px; font-size: 14px;
+      border: 1px solid #aaa; border-radius: 6px; }
+    .row { margin-top: 10px; display: flex; gap: 8px; }
+    button { padding: 8px 12px; border: 0; border-radius: 6px; cursor: pointer; }
+    #save { background: #4361ee; color: #fff; }
+    #reset { background: #e0e0e0; }
+    #status { margin-top: 10px; min-height: 18px; color: #2a7; }
+    #status.error { color: #c33; }
+    p.hint { color: #666; font-size: 12px; margin-top: 14px; }
+  </style>
+</head>
+<body>
+  <h1>Scan shortcut</h1>
+  <label for="shortcut">Press the keys you want to use</label>
+  <input id="shortcut" type="text" readonly placeholder="Click here, then press keys">
+  <div class="row">
+    <button id="save">Save</button>
+    <button id="reset">Reset to default</button>
+  </div>
+  <div id="status"></div>
+  <p class="hint">You can also change this any time from Firefox's
+    Add-ons page &rarr; gear menu &rarr; Manage Extension Shortcuts.</p>
+  <script src="options.js"></script>
+</body>
+</html>
