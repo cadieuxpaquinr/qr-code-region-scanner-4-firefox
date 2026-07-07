@@ -29,8 +29,11 @@ window.addEventListener("keydown", (e) => {
   if (e.key === "Escape") window.close();
 });
 
+document.addEventListener("dragstart", (e) => e.preventDefault());
+
 document.addEventListener("mousedown", (e) => {
   if (e.button !== 0) return;
+  e.preventDefault();
   dragging = true;
   startX = e.clientX;
   startY = e.clientY;
@@ -56,6 +59,7 @@ document.addEventListener("mouseup", (e) => {
 });
 
 function scanRegion(sel) {
+  if (!img.naturalWidth) return;
   const ir = img.getBoundingClientRect();
   const scale = img.naturalWidth / ir.width;
   let sx = Math.max(0, Math.round((sel.left - ir.left) * scale));

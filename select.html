@@ -4,8 +4,10 @@
   <meta charset="utf-8">
   <style>
     html, body { margin: 0; height: 100%; background: #111; overflow: hidden; }
-    body { display: flex; align-items: center; justify-content: center; cursor: crosshair; }
-    #shot { display: block; max-width: 100vw; max-height: 100vh; user-select: none; -moz-user-select: none; }
+    body { display: flex; align-items: center; justify-content: center; cursor: crosshair;
+      user-select: none; -moz-user-select: none; }
+    #shot { display: block; max-width: 100vw; max-height: 100vh; -moz-user-select: none;
+      pointer-events: none; -moz-window-dragging: no-drag; }
     #hint { position: fixed; top: 0; left: 0; right: 0; padding: 6px 10px; text-align: center;
       font: 13px system-ui, sans-serif; color: #fff; background: rgba(0, 0, 0, 0.55); }
     #box { position: fixed; display: none; border: 2px dashed #4cc9f0;
@@ -14,7 +16,7 @@
 </head>
 <body>
   <div id="hint">Drag over the QR code. Press Esc to cancel.</div>
-  <img id="shot" alt="">
+  <img id="shot" alt="" draggable="false">
   <div id="box"></div>
   <script src="vendor/jsqr.js"></script>
   <script src="scan-core.js"></script>
