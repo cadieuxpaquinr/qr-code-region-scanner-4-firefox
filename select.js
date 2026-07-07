@@ -12,8 +12,8 @@ browser.runtime.sendMessage({ type: "get-capture" }).then((dataUrl) => {
   img.src = dataUrl;
 });
 
-function notify(message, title) {
-  browser.runtime.sendMessage({ type: "notify", message, title });
+function send(msg) {
+  return browser.runtime.sendMessage(msg);
 }
 
 function currentRect(e) {
@@ -65,18 +65,20 @@ function scanRegion(sel) {
   handleResult(QRScanCore.decodeRegion(img, sx, sy, sw, sh));
 }
 
-function handleResult(result) {
-  if (!result || !result.data) {
-    notify("No QR code found in the selected region.");
+async function handleResult(result) {
+  try {
+    if (!result || !result.data) {
+      await send({ type: "notify", message: "No QR code found in the selected region." });
+      return;
+    }
+    const text = result.data;
+    if (QRScanCore.isHttpUrl(text)) {
+      await send({ type: "open-url", url: text, fromSelector: true });
+    } else {
+      const copied = QRScanCore.copyText(text);
+      await send({ type: "notify", message: (copied ? "Copied to clipboard: " : "Scanned: ") + text, title: "QR code scanned" });
+    }
+  } finally {
     window.close();
-    return;
   }
-  const text = result.data;
-  if (QRScanCore.isHttpUrl(text)) {
-    browser.runtime.sendMessage({ type: "open-url", url: text });
-  } else {
-    const copied = QRScanCore.copyText(text);
-    notify(copied ? "Copied to clipboard: " + text : "Scanned: " + text, "QR code scanned");
-  }
-  window.close();
 }

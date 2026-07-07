@@ -2,7 +2,6 @@ const COMMAND = "scan-qr";
 
 let pendingCapture = null;
 let sourceWindowId = null;
-let selectorWindowId = null;
 
 function notify(message, title) {
   return browser.notifications.create({
@@ -39,7 +38,7 @@ async function captureFallback(tab) {
   pendingCapture = dataUrl;
   sourceWindowId = tab.windowId;
   const win = await browser.windows.get(tab.windowId);
-  const popup = await browser.windows.create({
+  await browser.windows.create({
     url: browser.runtime.getURL("select.html"),
     type: "popup",
     left: win.left,
@@ -47,7 +46,6 @@ async function captureFallback(tab) {
     width: win.width,
     height: win.height
   });
-  selectorWindowId = popup.id;
 }
 
 browser.commands.onCommand.addListener((name) => {
@@ -57,14 +55,13 @@ browser.commands.onCommand.addListener((name) => {
 browser.browserAction.onClicked.addListener((tab) => startScan(tab));
 
 async function openUrl(msg, sender) {
-  const options = { url: msg.url };
-  const fromSelector = sender.tab && sender.tab.windowId === selectorWindowId;
-  if (fromSelector && sourceWindowId != null) {
-    options.windowId = sourceWindowId;
-    await browser.tabs.create(options);
+  if (msg.fromSelector && sourceWindowId != null) {
+    await browser.tabs.create({ url: msg.url, windowId: sourceWindowId });
     await browser.windows.update(sourceWindowId, { focused: true });
     return;
   }
+  const options = { url: msg.url };
+  if (sender.tab) options.windowId = sender.tab.windowId;
   await browser.tabs.create(options);
 }
 
