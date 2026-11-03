@@ -41,16 +41,20 @@ it. Unticking gives you the same combination back, not the default.
 You can also change the shortcut from the Add-ons page gear menu, Manage Extension
 Shortcuts.
 
-## Install (temporary)
+## Install
+
+Install it from
+[addons.mozilla.org](https://addons.mozilla.org/en-CA/firefox/addon/qr-region-scanner/)
+like any other Firefox add-on, with automatic updates.
+
+### From source
 
 1. Open `about:debugging` in Firefox.
 2. Choose "This Firefox", then "Load Temporary Add-on".
 3. Select the `manifest.json` file in this folder.
 
-This add-on is currently under review on
-[addons.mozilla.org](https://addons.mozilla.org/) (Firefox Add-ons). Once approved,
-you will be able to install it from there like any other Firefox add-on, with
-automatic updates.
+Firefox removes a temporary add-on when it closes. See [BUILD.md](BUILD.md) to
+package the sources into an installable zip.
 
 ## Permissions
 
