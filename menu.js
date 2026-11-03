@@ -1,17 +1,24 @@
+const REPO = "https://github.com/cadieuxpaquinr/qr-code-region-scanner-4-firefox";
+const ISSUES = `${REPO}/issues`;
+
 // Await the message before closing: closing the panel first tears down this
 // context and the message can be dropped in flight.
-async function run(type) {
-  await browser.runtime.sendMessage({ type });
+async function run(message) {
+  await browser.runtime.sendMessage(message);
   window.close();
 }
 
 const scan = document.getElementById("scan");
 const settings = document.getElementById("settings");
+const report = document.getElementById("report");
+const about = document.getElementById("about");
 const checkbox = document.getElementById("disable-shortcut");
 const label = document.getElementById("shortcut-label");
 
-scan.addEventListener("click", () => run("start-scan"));
-settings.addEventListener("click", () => run("open-settings"));
+scan.addEventListener("click", () => run({ type: "start-scan" }));
+settings.addEventListener("click", () => run({ type: "open-settings" }));
+report.addEventListener("click", () => run({ type: "open-url", url: ISSUES }));
+about.addEventListener("click", () => run({ type: "open-url", url: REPO }));
 
 function paint(disabled) {
   checkbox.checked = disabled;
@@ -30,7 +37,7 @@ checkbox.addEventListener("change", async () => {
 });
 
 // Firefox gives these rows no arrow key navigation, which a menu is expected to have.
-const items = [scan, checkbox, settings];
+const items = [scan, checkbox, settings, report, about];
 
 document.addEventListener("keydown", (e) => {
   const step = e.key === "ArrowDown" ? 1 : e.key === "ArrowUp" ? -1 : 0;
