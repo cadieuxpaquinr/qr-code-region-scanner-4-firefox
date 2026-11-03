@@ -1,6 +1,3 @@
-const LABEL_ENABLED = "Disable shortcut";
-const LABEL_DISABLED = "Shortcut disabled";
-
 // Await the message before closing: closing the panel first tears down this
 // context and the message can be dropped in flight.
 async function run(type) {
@@ -18,7 +15,7 @@ settings.addEventListener("click", () => run("open-settings"));
 
 function paint(disabled) {
   checkbox.checked = disabled;
-  label.textContent = disabled ? LABEL_DISABLED : LABEL_ENABLED;
+  label.textContent = QRShortcut.label(disabled);
 }
 
 // Unlike the buttons, toggling leaves the panel open.

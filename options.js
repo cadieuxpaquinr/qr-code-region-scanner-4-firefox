@@ -1,6 +1,9 @@
-const COMMAND = "scan-qr";
+const COMMAND = QRShortcut.COMMAND;
 const input = document.getElementById("shortcut");
 const status = document.getElementById("status");
+const save = document.getElementById("save");
+const checkbox = document.getElementById("disable-shortcut");
+const shortcutLabel = document.getElementById("shortcut-label");
 let pending = "";
 
 const KEY_NAMES = {
@@ -32,11 +35,16 @@ function mainKey(e) {
   return null;
 }
 
+// The single painter: every change reloads from Firefox, so a rejected call
+// leaves the form showing what is really bound rather than what was clicked.
 async function load() {
-  const commands = await browser.commands.getAll();
-  const cmd = commands.find((c) => c.name === COMMAND);
-  input.value = (cmd && cmd.shortcut) || "";
-  pending = input.value;
+  const { shortcut, disabled } = await QRShortcut.state();
+  input.value = shortcut;
+  pending = shortcut;
+  checkbox.checked = disabled;
+  shortcutLabel.textContent = QRShortcut.label(disabled);
+  input.disabled = disabled;
+  save.disabled = disabled;
 }
 
 input.addEventListener("keydown", (e) => {
@@ -62,7 +70,18 @@ input.addEventListener("keydown", (e) => {
   setStatus("");
 });
 
-document.getElementById("save").addEventListener("click", async () => {
+checkbox.addEventListener("change", async () => {
+  const wanted = checkbox.checked;
+  try {
+    await (wanted ? QRShortcut.disable() : QRShortcut.enable());
+    setStatus(wanted ? "Shortcut disabled." : "Shortcut enabled.");
+  } catch (e) {
+    setStatus("Could not change the shortcut.", true);
+  }
+  await load();
+});
+
+save.addEventListener("click", async () => {
   if (!pending) {
     setStatus("Pick a shortcut first.", true);
     return;

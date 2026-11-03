@@ -17,6 +17,11 @@
     await browser.commands.update({ name: COMMAND, shortcut: "" });
   }
 
+  // Shared so the menu and the settings window cannot drift apart.
+  function label(disabled) {
+    return disabled ? "Shortcut disabled" : "Disable shortcut";
+  }
+
   async function enable() {
     const stored = await browser.storage.local.get(SAVED);
     if (stored[SAVED]) {
@@ -26,5 +31,5 @@
     }
   }
 
-  window.QRShortcut = { COMMAND, state, disable, enable };
+  window.QRShortcut = { COMMAND, state, label, disable, enable };
 })();

@@ -33,6 +33,9 @@
     p.hint { color: var(--muted); font-size: 12px; margin-top: 14px; }
     fieldset { border: 0; margin: 0; padding: 0; }
     fieldset label { font-weight: normal; }
+    .check { display: flex; align-items: center; gap: 8px; margin-top: 4px; }
+    .check input { margin: 0; accent-color: var(--accent); }
+    [disabled], .off { opacity: 0.5; }
   </style>
 </head>
 <body>
@@ -52,6 +55,8 @@
         <button id="reset">Reset to default</button>
       </div>
       <div id="status"></div>
+      <label class="check"><input type="checkbox" id="disable-shortcut">
+        <span id="shortcut-label">Disable shortcut</span></label>
       <p class="hint">You can also change this any time from Firefox's
         Add-ons page &rarr; gear menu &rarr; Manage Extension Shortcuts.</p>
     </section>
@@ -68,6 +73,7 @@
     </section>
   </main>
 
+  <script src="shortcut.js"></script>
   <script src="options.js"></script>
 </body>
 </html>
