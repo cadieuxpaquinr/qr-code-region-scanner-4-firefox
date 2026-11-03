@@ -5,4 +5,21 @@ async function run(type) {
   window.close();
 }
 
-document.getElementById("scan").addEventListener("click", () => run("start-scan"));
+const items = [
+  ["scan", "start-scan"],
+  ["settings", "open-settings"]
+].map(([id, type]) => {
+  const button = document.getElementById(id);
+  button.addEventListener("click", () => run(type));
+  return button;
+});
+
+// Firefox gives buttons no arrow key navigation, which a menu is expected to have.
+document.addEventListener("keydown", (e) => {
+  const step = e.key === "ArrowDown" ? 1 : e.key === "ArrowUp" ? -1 : 0;
+  if (!step) return;
+  e.preventDefault();
+  const current = items.indexOf(document.activeElement);
+  const from = current < 0 ? (step > 0 ? -1 : 0) : current;
+  items[(from + step + items.length) % items.length].focus();
+});
