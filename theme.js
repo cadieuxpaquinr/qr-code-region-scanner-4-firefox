@@ -32,5 +32,6 @@
   });
 
   window.QRTheme = { current, apply, set };
-  apply();
+  // A failed read just means following the system, which is the CSS default.
+  apply().catch(() => {});
 })();

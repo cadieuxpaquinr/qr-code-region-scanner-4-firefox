@@ -99,9 +99,13 @@ save.addEventListener("click", async () => {
 });
 
 document.getElementById("reset").addEventListener("click", async () => {
-  await browser.commands.reset(COMMAND);
-  await load();
-  setStatus("Reset to default.");
+  try {
+    await browser.commands.reset(COMMAND);
+    await load();
+    setStatus("Reset to default.");
+  } catch (e) {
+    setStatus("Could not reset the shortcut.", true);
+  }
 });
 
 const nav = document.getElementById("sections");
@@ -119,12 +123,21 @@ nav.addEventListener("click", (e) => {
 
 async function loadTheme() {
   const value = await QRTheme.current();
-  document.querySelector(`input[name="theme"][value="${value}"]`).checked = true;
+  const radio = document.querySelector(`input[name="theme"][value="${value}"]`);
+  if (radio) radio.checked = true;
 }
 
 for (const radio of document.querySelectorAll('input[name="theme"]')) {
-  radio.addEventListener("change", () => QRTheme.set(radio.value));
+  radio.addEventListener("change", () => {
+    QRTheme.set(radio.value).catch(() => setStatus("Could not save the theme.", true));
+  });
 }
 
-QRPlatform.ready.then(load);
-loadTheme();
+// A failed platform lookup must still leave a usable form: load on the default
+// path rather than leaving every field blank with only a console message.
+QRPlatform.ready
+  .catch(() => {})
+  .then(load)
+  .catch(() => setStatus("Could not read the current shortcut.", true));
+
+loadTheme().catch(() => {});

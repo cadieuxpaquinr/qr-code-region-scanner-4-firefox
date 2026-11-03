@@ -63,4 +63,6 @@ document.getElementById("build").textContent =
     ? `${manifest.name} v${manifest.version} · ${BRANCH}`
     : `${manifest.name} v${manifest.version}`;
 
-QRShortcut.state().then((s) => paint(s.disabled));
+// On failure show the enabled label, which is what the markup already says, rather
+// than leaving the row contradicting the real state with only a console message.
+QRShortcut.state().then((s) => paint(s.disabled)).catch(() => paint(false));
