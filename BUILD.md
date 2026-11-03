@@ -1,10 +1,12 @@
 # Build instructions
 
 This add-on has no compilation, transpilation, bundling, or minification step.
-Every source file (`background.js`, `content.js`, `scan-core.js`, `select.js`,
+Every source file (`background.js`, `content.js`, `scan-core.js`, `theme.css`,
+`theme.js`, `platform.js`, `shortcut.js`, `menu.js`, `menu.html`, `select.js`,
 `select.html`, `options.js`, `options.html`, `manifest.json`, `icons/icon.svg`)
 is plain, hand-written code shipped exactly as-is. "Building" only means zipping
-these files with `manifest.json` at the archive root.
+these files with `manifest.json` at the archive root. The authoritative list is
+`FILES` in `build.sh`.
 
 ## Build environment
 
