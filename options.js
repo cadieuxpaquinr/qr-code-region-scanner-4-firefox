@@ -1,6 +1,9 @@
-const COMMAND = "scan-qr";
+const COMMAND = QRShortcut.COMMAND;
 const input = document.getElementById("shortcut");
 const status = document.getElementById("status");
+const save = document.getElementById("save");
+const checkbox = document.getElementById("disable-shortcut");
+const shortcutLabel = document.getElementById("shortcut-label");
 let pending = "";
 
 const KEY_NAMES = {
@@ -32,11 +35,22 @@ function mainKey(e) {
   return null;
 }
 
+// pending holds the manifest string Save sends to Firefox; the field shows the
+// platform spelling of it, which on macOS is not the same text.
+function show(shortcut) {
+  pending = shortcut;
+  input.value = QRPlatform.display(shortcut);
+}
+
+// The single painter: every change reloads from Firefox, so a rejected call
+// leaves the form showing what is really bound rather than what was clicked.
 async function load() {
-  const commands = await browser.commands.getAll();
-  const cmd = commands.find((c) => c.name === COMMAND);
-  input.value = (cmd && cmd.shortcut) || "";
-  pending = input.value;
+  const { shortcut, disabled } = await QRShortcut.state();
+  show(shortcut);
+  checkbox.checked = disabled;
+  shortcutLabel.textContent = QRShortcut.label(disabled);
+  input.disabled = disabled;
+  save.disabled = disabled;
 }
 
 input.addEventListener("keydown", (e) => {
@@ -44,25 +58,34 @@ input.addEventListener("keydown", (e) => {
   const key = mainKey(e);
   if (!key) return;
 
-  const mods = [];
-  if (e.ctrlKey) mods.push("Ctrl");
-  if (e.altKey) mods.push("Alt");
-  if (e.metaKey) mods.push("Command");
-  if (e.shiftKey) mods.push("Shift");
-
-  const hasPrimary = e.ctrlKey || e.altKey || e.metaKey;
-  const isFunctionKey = /^F([1-9]|1[0-2])$/.test(key);
-  if (!hasPrimary && !isFunctionKey) {
-    setStatus("Use at least Ctrl, Alt or Command, or a function key.", true);
+  const mods = QRPlatform.modifiers(e);
+  if (!mods) {
+    setStatus(QRPlatform.metaRejected(), true);
     return;
   }
 
-  pending = mods.concat(key).join("+");
-  input.value = pending;
+  const isFunctionKey = /^F([1-9]|1[0-2])$/.test(key);
+  if (!QRPlatform.hasPrimary(mods) && !isFunctionKey) {
+    setStatus(QRPlatform.primaryHint(), true);
+    return;
+  }
+
+  show(mods.concat(key).join("+"));
   setStatus("");
 });
 
-document.getElementById("save").addEventListener("click", async () => {
+checkbox.addEventListener("change", async () => {
+  const wanted = checkbox.checked;
+  try {
+    await (wanted ? QRShortcut.disable() : QRShortcut.enable());
+    setStatus(wanted ? "Shortcut disabled." : "Shortcut enabled.");
+  } catch (e) {
+    setStatus("Could not change the shortcut.", true);
+  }
+  await load();
+});
+
+save.addEventListener("click", async () => {
   if (!pending) {
     setStatus("Pick a shortcut first.", true);
     return;
@@ -81,4 +104,27 @@ document.getElementById("reset").addEventListener("click", async () => {
   setStatus("Reset to default.");
 });
 
-load();
+const nav = document.getElementById("sections");
+
+nav.addEventListener("click", (e) => {
+  const name = e.target.dataset && e.target.dataset.section;
+  if (!name) return;
+  for (const button of nav.children) {
+    const selected = button === e.target;
+    if (selected) button.setAttribute("aria-current", "page");
+    else button.removeAttribute("aria-current");
+    document.getElementById(button.dataset.section).hidden = !selected;
+  }
+});
+
+async function loadTheme() {
+  const value = await QRTheme.current();
+  document.querySelector(`input[name="theme"][value="${value}"]`).checked = true;
+}
+
+for (const radio of document.querySelectorAll('input[name="theme"]')) {
+  radio.addEventListener("change", () => QRTheme.set(radio.value));
+}
+
+QRPlatform.ready.then(load);
+loadTheme();
