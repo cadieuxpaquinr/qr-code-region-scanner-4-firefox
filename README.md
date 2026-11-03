@@ -5,9 +5,16 @@ and opens its URL in a new tab.
 
 ## Usage
 
-1. Press the keyboard shortcut (default `Ctrl+1`; `Alt+1` on Windows,
-   `Control+1` on macOS), or click the toolbar button
-   and choose "Scan a region".
+1. Press the keyboard shortcut, or click the toolbar button and choose "Scan a region".
+   The default shortcut avoids the combination Firefox already uses to select a tab on
+   each platform:
+
+   | Platform | Default |
+   |---|---|
+   | Linux | `Ctrl+1` |
+   | Windows | `Alt+1` |
+   | macOS | `Control+1` (shown as `⌃1`) |
+
 2. Drag a rectangle over the QR code. Press `Escape` to cancel.
 3. The extension decodes the QR code and:
    - opens the value in a new tab if it is an `http`/`https` URL, or
