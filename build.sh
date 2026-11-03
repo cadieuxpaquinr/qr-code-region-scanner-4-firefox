@@ -14,7 +14,7 @@ DIST="web-ext-artifacts"
 OUT="$DIST/qr_region_scanner-$VERSION.zip"
 
 FILES="manifest.json background.js content.js scan-core.js \
-select.html select.js options.html options.js \
+menu.html menu.js select.html select.js options.html options.js \
 vendor/jsqr.js icons/icon.svg README.md LICENSE"
 
 mkdir -p "$DIST"

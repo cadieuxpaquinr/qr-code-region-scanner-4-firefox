@@ -52,8 +52,6 @@ browser.commands.onCommand.addListener((name) => {
   if (name === COMMAND) startScan();
 });
 
-browser.browserAction.onClicked.addListener((tab) => startScan(tab));
-
 async function openUrl(msg, sender) {
   if (msg.fromSelector && sourceWindowId != null) {
     await browser.tabs.create({ url: msg.url, windowId: sourceWindowId });
@@ -67,6 +65,8 @@ async function openUrl(msg, sender) {
 
 browser.runtime.onMessage.addListener((msg, sender) => {
   switch (msg && msg.type) {
+    case "start-scan":
+      return startScan();
     case "capture":
       return browser.tabs.captureVisibleTab(sender.tab.windowId, { format: "png" });
     case "get-capture":
