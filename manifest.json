@@ -31,7 +31,8 @@
   "commands": {
     "scan-qr": {
       "suggested_key": {
-        "default": "Ctrl+1"
+        "default": "Ctrl+1",
+        "windows": "Alt+1"
       },
       "description": "Scan a QR code in a selected region"
     }
