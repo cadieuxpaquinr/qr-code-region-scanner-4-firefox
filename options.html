@@ -3,19 +3,23 @@
 <head>
   <meta charset="utf-8">
   <title>QR Region Scanner settings</title>
+  <link rel="stylesheet" href="theme.css">
+  <script src="theme.js"></script>
   <style>
-    body { font: 14px system-ui, sans-serif; margin: 16px; width: 360px; color: #1b1b2f; }
+    body { font: 14px system-ui, sans-serif; margin: 16px; width: 360px; }
     h1 { font-size: 16px; margin: 0 0 12px; }
     label { display: block; margin-bottom: 6px; font-weight: 600; }
     #shortcut { width: 100%; box-sizing: border-box; padding: 8px; font-size: 14px;
-      border: 1px solid #aaa; border-radius: 6px; }
+      background: var(--field-bg); color: inherit;
+      border: 1px solid var(--field-border); border-radius: 6px; }
     .row { margin-top: 10px; display: flex; gap: 8px; }
-    button { padding: 8px 12px; border: 0; border-radius: 6px; cursor: pointer; }
-    #save { background: #4361ee; color: #fff; }
-    #reset { background: #e0e0e0; }
-    #status { margin-top: 10px; min-height: 18px; color: #2a7; }
-    #status.error { color: #c33; }
-    p.hint { color: #666; font-size: 12px; margin-top: 14px; }
+    button { padding: 8px 12px; border: 0; border-radius: 6px; cursor: pointer;
+      font: inherit; }
+    #save { background: var(--accent); color: var(--accent-fg); }
+    #reset { background: var(--button-bg); color: inherit; }
+    #status { margin-top: 10px; min-height: 18px; color: var(--ok); }
+    #status.error { color: var(--error); }
+    p.hint { color: var(--muted); font-size: 12px; margin-top: 14px; }
   </style>
 </head>
 <body>

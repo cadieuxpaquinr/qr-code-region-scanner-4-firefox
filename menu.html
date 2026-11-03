@@ -2,14 +2,16 @@
 <html>
 <head>
   <meta charset="utf-8">
+  <link rel="stylesheet" href="theme.css">
+  <script src="theme.js"></script>
   <style>
-    body { font: 14px system-ui, sans-serif; margin: 0; width: 220px; color: #1b1b2f;
-      background: #fff; }
+    body { font: 14px system-ui, sans-serif; margin: 0; width: 220px; }
     button { display: block; width: 100%; box-sizing: border-box; padding: 10px 14px;
       border: 0; background: none; font: inherit; color: inherit; text-align: left;
       cursor: pointer; }
-    button:hover, button:focus { background: #4361ee; color: #fff; outline: none; }
-    hr { border: 0; border-top: 1px solid #e0e0e0; margin: 4px 0; }
+    button:hover, button:focus { background: var(--accent); color: var(--accent-fg);
+      outline: none; }
+    hr { border: 0; border-top: 1px solid var(--line); margin: 4px 0; }
   </style>
 </head>
 <body>
