@@ -20,8 +20,16 @@ the tab and opens a small window where you make the same selection on the captur
 
 ## Settings
 
-Click the toolbar button and choose "Settings" to change the shortcut. The same page
-opens from the Add-ons page, gear menu, Preferences.
+Click the toolbar button and choose "Settings". The same page opens from the Add-ons
+page, gear menu, Preferences. It has two sections:
+
+- **Scanner**: change the scan shortcut, or turn it off.
+- **Appearance**: follow the system light or dark theme, or force one of them.
+
+To turn the shortcut off without opening the settings, tick "Disable shortcut" in the
+toolbar menu. This releases the key combination, so Firefox and other add-ons can use
+it. Unticking gives you the same combination back, not the default.
+
 You can also change the shortcut from the Add-ons page gear menu, Manage Extension
 Shortcuts.
 
@@ -41,6 +49,7 @@ automatic updates.
 - `activeTab`: capture and scan only the current tab when you trigger a scan.
 - `notifications`: report results and errors.
 - `clipboardWrite`: copy non-URL codes to the clipboard.
+- `storage`: remember the theme choice and the shortcut you had before disabling it.
 
 ## Limitation
 
