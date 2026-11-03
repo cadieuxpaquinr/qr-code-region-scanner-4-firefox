@@ -61,8 +61,8 @@ async function openSettings() {
   const win = await browser.windows.create({
     url: browser.runtime.getURL("options.html"),
     type: "popup",
-    width: 420,
-    height: 340
+    width: 560,
+    height: 420
   });
   settingsWindowId = win.id;
 }

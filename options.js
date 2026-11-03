@@ -81,4 +81,27 @@ document.getElementById("reset").addEventListener("click", async () => {
   setStatus("Reset to default.");
 });
 
+const nav = document.getElementById("sections");
+
+nav.addEventListener("click", (e) => {
+  const name = e.target.dataset && e.target.dataset.section;
+  if (!name) return;
+  for (const button of nav.children) {
+    const selected = button === e.target;
+    if (selected) button.setAttribute("aria-current", "page");
+    else button.removeAttribute("aria-current");
+    document.getElementById(button.dataset.section).hidden = !selected;
+  }
+});
+
+async function loadTheme() {
+  const value = await QRTheme.current();
+  document.querySelector(`input[name="theme"][value="${value}"]`).checked = true;
+}
+
+for (const radio of document.querySelectorAll('input[name="theme"]')) {
+  radio.addEventListener("change", () => QRTheme.set(radio.value));
+}
+
 load();
+loadTheme();
