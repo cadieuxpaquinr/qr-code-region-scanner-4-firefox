@@ -5,7 +5,8 @@ and opens its URL in a new tab.
 
 ## Usage
 
-1. Press the keyboard shortcut (default `Ctrl+Shift+Y`) or click the toolbar button.
+1. Press the keyboard shortcut (default `Ctrl+Shift+Y`), or click the toolbar button
+   and choose "Scan a region".
 2. Drag a rectangle over the QR code. Press `Escape` to cancel.
 3. The extension decodes the QR code and:
    - opens the value in a new tab if it is an `http`/`https` URL, or
@@ -19,8 +20,10 @@ the tab and opens a small window where you make the same selection on the captur
 
 ## Settings
 
-Open the extension's options (Add-ons page, gear menu, Preferences) to change the shortcut.
-You can also change it from the Add-ons page gear menu, Manage Extension Shortcuts.
+Click the toolbar button and choose "Settings" to change the shortcut. The same page
+opens from the Add-ons page, gear menu, Preferences.
+You can also change the shortcut from the Add-ons page gear menu, Manage Extension
+Shortcuts.
 
 ## Install (temporary)
 
