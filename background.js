@@ -1,8 +1,18 @@
 const COMMAND = "scan-qr";
 
-let pendingCapture = null;
-let sourceWindowId = null;
+// One entry per selector window, id -> { dataUrl, windowId }. A screenshot is a
+// multi-megabyte data URL, so it is handed over once and dropped: keeping a single
+// shared slot both retained it for the session and let two overlapping scans show
+// each other's page.
+const captures = new Map();
+let captureSeq = 0;
+
+// Which browser window each selector window was opened from, so a decoded URL
+// lands back where the user started. Per selector, not one shared value, and
+// dropped with the window.
+const selectorSources = new Map();
 let settingsWindowId = null;
+let lastNormalWindowId = null;
 
 function notify(message, title) {
   return browser.notifications.create({
@@ -13,13 +23,42 @@ function notify(message, title) {
   });
 }
 
-async function startScan(tab) {
+// Both the shortcut and the menu can fire while one of our own popup windows holds
+// focus, and for a background script "currentWindow" means the last focused window
+// of any type. Target the browser window the user came from instead, or the add-on
+// ends up scanning its own settings dialog.
+async function scanTarget() {
+  if (lastNormalWindowId != null) {
+    const [remembered] = await browser.tabs.query({
+      active: true, windowId: lastNormalWindowId
+    });
+    if (remembered) return remembered;
+  }
+  const [current] = await browser.tabs.query({
+    active: true, windowType: "normal", currentWindow: true
+  });
+  if (current) return current;
+  const [any] = await browser.tabs.query({ active: true, windowType: "normal" });
+  return any;
+}
+
+async function startScan() {
+  const tab = await scanTarget();
   if (!tab) {
-    [tab] = await browser.tabs.query({ active: true, currentWindow: true });
+    notify("No page to scan.");
+    return;
   }
   try {
-    await browser.tabs.executeScript(tab.id, { file: "vendor/jsqr.js" });
-    await browser.tabs.executeScript(tab.id, { file: "scan-core.js" });
+    // Also the gate for pages Firefox will not inject into: the probe throws
+    // first, and a navigation gives a fresh context where it reads false again,
+    // so there is nothing to invalidate.
+    const [loaded] = await browser.tabs.executeScript(tab.id, {
+      code: "typeof jsQR === 'function' && typeof QRScanCore === 'object'"
+    });
+    if (!loaded) {
+      await browser.tabs.executeScript(tab.id, { file: "vendor/jsqr.js" });
+      await browser.tabs.executeScript(tab.id, { file: "scan-core.js" });
+    }
     await browser.tabs.executeScript(tab.id, { file: "content.js" });
   } catch (e) {
     await captureFallback(tab);
@@ -36,17 +75,21 @@ async function captureFallback(tab) {
     notify("This page cannot be captured.");
     return;
   }
-  pendingCapture = dataUrl;
-  sourceWindowId = tab.windowId;
+  const id = String(++captureSeq);
+  captures.set(id, { dataUrl });
   const win = await browser.windows.get(tab.windowId);
-  await browser.windows.create({
-    url: browser.runtime.getURL("select.html"),
+  const selector = await browser.windows.create({
+    url: browser.runtime.getURL(`select.html#${id}`),
     type: "popup",
     left: win.left,
     top: win.top,
     width: win.width,
     height: win.height
   });
+  selectorSources.set(selector.id, tab.windowId);
+  // The selector often reads and drops its entry before this resolves.
+  const entry = captures.get(id);
+  if (entry) entry.windowId = selector.id;
 }
 
 async function openSettings() {
@@ -67,8 +110,23 @@ async function openSettings() {
   settingsWindowId = win.id;
 }
 
+browser.windows.onFocusChanged.addListener(async (windowId) => {
+  if (windowId === browser.windows.WINDOW_ID_NONE) return;
+  try {
+    const win = await browser.windows.get(windowId);
+    if (win.type === "normal") lastNormalWindowId = windowId;
+  } catch (e) {
+    // The window went away between the event and the lookup.
+  }
+});
+
 browser.windows.onRemoved.addListener((id) => {
   if (id === settingsWindowId) settingsWindowId = null;
+  if (id === lastNormalWindowId) lastNormalWindowId = null;
+  for (const [captureId, entry] of captures) {
+    if (entry.windowId === id) captures.delete(captureId);
+  }
+  selectorSources.delete(id);
 });
 
 browser.commands.onCommand.addListener((name) => {
@@ -76,13 +134,25 @@ browser.commands.onCommand.addListener((name) => {
 });
 
 async function openUrl(msg, sender) {
-  if (msg.fromSelector && sourceWindowId != null) {
-    await browser.tabs.create({ url: msg.url, windowId: sourceWindowId });
-    await browser.windows.update(sourceWindowId, { focused: true });
+  const senderWindowId = sender.tab && sender.tab.windowId;
+  if (msg.fromSelector) {
+    const source = selectorSources.get(senderWindowId);
+    if (source != null) {
+      try {
+        await browser.tabs.create({ url: msg.url, windowId: source });
+        await browser.windows.update(source, { focused: true });
+        return;
+      } catch (e) {
+        // The window the scan started from has been closed.
+        selectorSources.delete(senderWindowId);
+      }
+    }
+    // Let Firefox place the tab, never the selector popup the message came from.
+    await browser.tabs.create({ url: msg.url });
     return;
   }
   const options = { url: msg.url };
-  if (sender.tab) options.windowId = sender.tab.windowId;
+  if (senderWindowId != null) options.windowId = senderWindowId;
   await browser.tabs.create(options);
 }
 
@@ -94,8 +164,11 @@ browser.runtime.onMessage.addListener((msg, sender) => {
       return openSettings();
     case "capture":
       return browser.tabs.captureVisibleTab(sender.tab.windowId, { format: "png" });
-    case "get-capture":
-      return Promise.resolve(pendingCapture);
+    case "get-capture": {
+      const entry = captures.get(msg.id);
+      captures.delete(msg.id);
+      return Promise.resolve(entry ? entry.dataUrl : null);
+    }
     case "open-url":
       return openUrl(msg, sender);
     case "notify":

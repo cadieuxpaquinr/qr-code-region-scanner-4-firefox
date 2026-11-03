@@ -1,5 +1,8 @@
 # QR Region Scanner
 
+[![Firefox users](https://img.shields.io/amo/users/qr-region-scanner)](https://addons.mozilla.org/en-CA/firefox/addon/qr-region-scanner/)
+[![Rating](https://img.shields.io/amo/rating/qr-region-scanner)](https://addons.mozilla.org/en-CA/firefox/addon/qr-region-scanner/reviews/)
+
 A Firefox extension that scans a QR code from a region you select on the current page
 and opens its URL in a new tab.
 

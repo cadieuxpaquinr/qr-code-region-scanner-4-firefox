@@ -3,12 +3,18 @@ const box = document.getElementById("box");
 let startX = 0;
 let startY = 0;
 let dragging = false;
+let ready = false;
 
-browser.runtime.sendMessage({ type: "get-capture" }).then((dataUrl) => {
+// The background puts our capture id in the fragment of the URL it opened us with.
+const captureId = location.hash.slice(1);
+
+browser.runtime.sendMessage({ type: "get-capture", id: captureId }).then((dataUrl) => {
   if (!dataUrl) {
     window.close();
     return;
   }
+  // Dragging before the screenshot is decodable would select against nothing.
+  img.onload = () => { ready = true; };
   img.src = dataUrl;
 });
 
@@ -32,7 +38,7 @@ window.addEventListener("keydown", (e) => {
 document.addEventListener("dragstart", (e) => e.preventDefault());
 
 document.addEventListener("mousedown", (e) => {
-  if (e.button !== 0) return;
+  if (e.button !== 0 || !ready) return;
   e.preventDefault();
   dragging = true;
   startX = e.clientX;
@@ -58,15 +64,22 @@ document.addEventListener("mouseup", (e) => {
   scanRegion(r);
 });
 
-function scanRegion(sel) {
-  if (!img.naturalWidth) return;
-  const ir = img.getBoundingClientRect();
-  const scale = img.naturalWidth / ir.width;
-  let sx = Math.max(0, Math.round((sel.left - ir.left) * scale));
-  let sy = Math.max(0, Math.round((sel.top - ir.top) * scale));
-  const sw = Math.max(1, Math.min(Math.round(sel.width * scale), img.naturalWidth - sx));
-  const sh = Math.max(1, Math.min(Math.round(sel.height * scale), img.naturalHeight - sy));
-  handleResult(QRScanCore.decodeRegion(img, sx, sy, sw, sh));
+async function scanRegion(sel) {
+  let result = null;
+  try {
+    const ir = img.getBoundingClientRect();
+    const scale = img.naturalWidth / ir.width;
+    const sx = Math.max(0, Math.round((sel.left - ir.left) * scale));
+    const sy = Math.max(0, Math.round((sel.top - ir.top) * scale));
+    const sw = Math.max(1, Math.min(Math.round(sel.width * scale), img.naturalWidth - sx));
+    const sh = Math.max(1, Math.min(Math.round(sel.height * scale), img.naturalHeight - sy));
+    result = QRScanCore.decodeRegion(img, sx, sy, sw, sh);
+  } catch (e) {
+    await send({ type: "notify", message: "Could not scan this region." });
+    window.close();
+    return;
+  }
+  await handleResult(result);
 }
 
 async function handleResult(result) {
