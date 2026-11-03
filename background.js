@@ -1,6 +1,12 @@
 const COMMAND = "scan-qr";
 
-let pendingCapture = null;
+// One entry per selector window, id -> { dataUrl, windowId }. A screenshot is a
+// multi-megabyte data URL, so it is handed over once and dropped: keeping a single
+// shared slot both retained it for the session and let two overlapping scans show
+// each other's page.
+const captures = new Map();
+let captureSeq = 0;
+
 let sourceWindowId = null;
 let settingsWindowId = null;
 let lastNormalWindowId = null;
@@ -58,17 +64,21 @@ async function captureFallback(tab) {
     notify("This page cannot be captured.");
     return;
   }
-  pendingCapture = dataUrl;
+  const id = String(++captureSeq);
+  captures.set(id, { dataUrl });
   sourceWindowId = tab.windowId;
   const win = await browser.windows.get(tab.windowId);
-  await browser.windows.create({
-    url: browser.runtime.getURL("select.html"),
+  const selector = await browser.windows.create({
+    url: browser.runtime.getURL(`select.html#${id}`),
     type: "popup",
     left: win.left,
     top: win.top,
     width: win.width,
     height: win.height
   });
+  // The selector often reads and drops its entry before this resolves.
+  const entry = captures.get(id);
+  if (entry) entry.windowId = selector.id;
 }
 
 async function openSettings() {
@@ -102,6 +112,9 @@ browser.windows.onFocusChanged.addListener(async (windowId) => {
 browser.windows.onRemoved.addListener((id) => {
   if (id === settingsWindowId) settingsWindowId = null;
   if (id === lastNormalWindowId) lastNormalWindowId = null;
+  for (const [captureId, entry] of captures) {
+    if (entry.windowId === id) captures.delete(captureId);
+  }
 });
 
 browser.commands.onCommand.addListener((name) => {
@@ -127,8 +140,11 @@ browser.runtime.onMessage.addListener((msg, sender) => {
       return openSettings();
     case "capture":
       return browser.tabs.captureVisibleTab(sender.tab.windowId, { format: "png" });
-    case "get-capture":
-      return Promise.resolve(pendingCapture);
+    case "get-capture": {
+      const entry = captures.get(msg.id);
+      captures.delete(msg.id);
+      return Promise.resolve(entry ? entry.dataUrl : null);
+    }
     case "open-url":
       return openUrl(msg, sender);
     case "notify":

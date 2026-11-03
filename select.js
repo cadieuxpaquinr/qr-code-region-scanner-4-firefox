@@ -4,7 +4,10 @@ let startX = 0;
 let startY = 0;
 let dragging = false;
 
-browser.runtime.sendMessage({ type: "get-capture" }).then((dataUrl) => {
+// The background puts our capture id in the fragment of the URL it opened us with.
+const captureId = location.hash.slice(1);
+
+browser.runtime.sendMessage({ type: "get-capture", id: captureId }).then((dataUrl) => {
   if (!dataUrl) {
     window.close();
     return;
