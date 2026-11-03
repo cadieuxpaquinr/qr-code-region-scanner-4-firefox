@@ -35,12 +35,18 @@ function mainKey(e) {
   return null;
 }
 
+// pending holds the manifest string Save sends to Firefox; the field shows the
+// platform spelling of it, which on macOS is not the same text.
+function show(shortcut) {
+  pending = shortcut;
+  input.value = QRPlatform.display(shortcut);
+}
+
 // The single painter: every change reloads from Firefox, so a rejected call
 // leaves the form showing what is really bound rather than what was clicked.
 async function load() {
   const { shortcut, disabled } = await QRShortcut.state();
-  input.value = shortcut;
-  pending = shortcut;
+  show(shortcut);
   checkbox.checked = disabled;
   shortcutLabel.textContent = QRShortcut.label(disabled);
   input.disabled = disabled;
@@ -52,21 +58,19 @@ input.addEventListener("keydown", (e) => {
   const key = mainKey(e);
   if (!key) return;
 
-  const mods = [];
-  if (e.ctrlKey) mods.push("Ctrl");
-  if (e.altKey) mods.push("Alt");
-  if (e.metaKey) mods.push("Command");
-  if (e.shiftKey) mods.push("Shift");
-
-  const hasPrimary = e.ctrlKey || e.altKey || e.metaKey;
-  const isFunctionKey = /^F([1-9]|1[0-2])$/.test(key);
-  if (!hasPrimary && !isFunctionKey) {
-    setStatus("Use at least Ctrl, Alt or Command, or a function key.", true);
+  const mods = QRPlatform.modifiers(e);
+  if (!mods) {
+    setStatus(QRPlatform.metaRejected(), true);
     return;
   }
 
-  pending = mods.concat(key).join("+");
-  input.value = pending;
+  const isFunctionKey = /^F([1-9]|1[0-2])$/.test(key);
+  if (!QRPlatform.hasPrimary(mods) && !isFunctionKey) {
+    setStatus(QRPlatform.primaryHint(), true);
+    return;
+  }
+
+  show(mods.concat(key).join("+"));
   setStatus("");
 });
 
@@ -122,5 +126,5 @@ for (const radio of document.querySelectorAll('input[name="theme"]')) {
   radio.addEventListener("change", () => QRTheme.set(radio.value));
 }
 
-load();
+QRPlatform.ready.then(load);
 loadTheme();
