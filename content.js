@@ -73,7 +73,10 @@
     overlay.remove();
     box.remove();
     window.removeEventListener("keydown", onKey, true);
-    requestAnimationFrame(() => scanRegion(r));
+    // One frame is not enough: a rAF callback runs before the next paint, so the
+    // dim overlay could still be composited into the screenshot. Wait for the
+    // frame after the removal has actually been painted.
+    requestAnimationFrame(() => requestAnimationFrame(() => scanRegion(r)));
   });
 
   async function scanRegion(rect) {
