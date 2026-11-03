@@ -3,9 +3,22 @@
 A Firefox extension that scans a QR code from a region you select on the current page
 and opens its URL in a new tab.
 
+**No data collection.** Everything happens on your computer and never leaves it. The
+add-on decodes the QR code with bundled code and makes no network requests of its own.
+If you open a scanned URL, that page load is a normal visit you asked for.
+
 ## Usage
 
-1. Press the keyboard shortcut (default `Ctrl+Shift+Y`) or click the toolbar button.
+1. Press the keyboard shortcut, or click the toolbar button and choose "Scan a region".
+   The default shortcut avoids the combination Firefox already uses to select a tab on
+   each platform:
+
+   | Platform | Default |
+   |---|---|
+   | Linux | `Ctrl+1` |
+   | Windows | `Alt+1` |
+   | macOS | `Control+1` (shown as `⌃1`) |
+
 2. Drag a rectangle over the QR code. Press `Escape` to cancel.
 3. The extension decodes the QR code and:
    - opens the value in a new tab if it is an `http`/`https` URL, or
@@ -19,25 +32,40 @@ the tab and opens a small window where you make the same selection on the captur
 
 ## Settings
 
-Open the extension's options (Add-ons page, gear menu, Preferences) to change the shortcut.
-You can also change it from the Add-ons page gear menu, Manage Extension Shortcuts.
+Click the toolbar button and choose "Settings". The same page opens from the Add-ons
+page, gear menu, Preferences. It has two sections:
 
-## Install (temporary)
+- **Scanner**: change the scan shortcut, or turn it off.
+- **Appearance**: follow the system light or dark theme, or force one of them.
+
+To turn the shortcut off without opening the settings, tick "Disable shortcut" in the
+toolbar menu. This releases the key combination, so Firefox and other add-ons can use
+it. Unticking gives you the same combination back, not the default.
+
+You can also change the shortcut from the Add-ons page gear menu, Manage Extension
+Shortcuts.
+
+## Install
+
+Install it from
+[addons.mozilla.org](https://addons.mozilla.org/en-CA/firefox/addon/qr-region-scanner/)
+like any other Firefox add-on, with automatic updates.
+
+### From source
 
 1. Open `about:debugging` in Firefox.
 2. Choose "This Firefox", then "Load Temporary Add-on".
 3. Select the `manifest.json` file in this folder.
 
-This add-on is currently under review on
-[addons.mozilla.org](https://addons.mozilla.org/) (Firefox Add-ons). Once approved,
-you will be able to install it from there like any other Firefox add-on, with
-automatic updates.
+Firefox removes a temporary add-on when it closes. See [BUILD.md](BUILD.md) to
+package the sources into an installable zip.
 
 ## Permissions
 
 - `activeTab`: capture and scan only the current tab when you trigger a scan.
 - `notifications`: report results and errors.
 - `clipboardWrite`: copy non-URL codes to the clipboard.
+- `storage`: remember the theme choice and the shortcut you had before disabling it.
 
 ## Limitation
 

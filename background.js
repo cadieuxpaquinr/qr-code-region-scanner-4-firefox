@@ -2,6 +2,7 @@ const COMMAND = "scan-qr";
 
 let pendingCapture = null;
 let sourceWindowId = null;
+let settingsWindowId = null;
 
 function notify(message, title) {
   return browser.notifications.create({
@@ -48,11 +49,31 @@ async function captureFallback(tab) {
   });
 }
 
+async function openSettings() {
+  if (settingsWindowId != null) {
+    try {
+      await browser.windows.update(settingsWindowId, { focused: true });
+      return;
+    } catch (e) {
+      settingsWindowId = null;
+    }
+  }
+  const win = await browser.windows.create({
+    url: browser.runtime.getURL("options.html"),
+    type: "popup",
+    width: 560,
+    height: 420
+  });
+  settingsWindowId = win.id;
+}
+
+browser.windows.onRemoved.addListener((id) => {
+  if (id === settingsWindowId) settingsWindowId = null;
+});
+
 browser.commands.onCommand.addListener((name) => {
   if (name === COMMAND) startScan();
 });
-
-browser.browserAction.onClicked.addListener((tab) => startScan(tab));
 
 async function openUrl(msg, sender) {
   if (msg.fromSelector && sourceWindowId != null) {
@@ -67,6 +88,10 @@ async function openUrl(msg, sender) {
 
 browser.runtime.onMessage.addListener((msg, sender) => {
   switch (msg && msg.type) {
+    case "start-scan":
+      return startScan();
+    case "open-settings":
+      return openSettings();
     case "capture":
       return browser.tabs.captureVisibleTab(sender.tab.windowId, { format: "png" });
     case "get-capture":
