@@ -3,6 +3,10 @@
 A Firefox extension that scans a QR code from a region you select on the current page
 and opens its URL in a new tab.
 
+**No data collection.** Everything happens on your computer and never leaves it. The
+add-on decodes the QR code with bundled code and makes no network requests of its own.
+If you open a scanned URL, that page load is a normal visit you asked for.
+
 ## Usage
 
 1. Press the keyboard shortcut, or click the toolbar button and choose "Scan a region".
