@@ -7,7 +7,10 @@ const COMMAND = "scan-qr";
 const captures = new Map();
 let captureSeq = 0;
 
-let sourceWindowId = null;
+// Which browser window each selector window was opened from, so a decoded URL
+// lands back where the user started. Per selector, not one shared value, and
+// dropped with the window.
+const selectorSources = new Map();
 let settingsWindowId = null;
 let lastNormalWindowId = null;
 
@@ -74,7 +77,6 @@ async function captureFallback(tab) {
   }
   const id = String(++captureSeq);
   captures.set(id, { dataUrl });
-  sourceWindowId = tab.windowId;
   const win = await browser.windows.get(tab.windowId);
   const selector = await browser.windows.create({
     url: browser.runtime.getURL(`select.html#${id}`),
@@ -84,6 +86,7 @@ async function captureFallback(tab) {
     width: win.width,
     height: win.height
   });
+  selectorSources.set(selector.id, tab.windowId);
   // The selector often reads and drops its entry before this resolves.
   const entry = captures.get(id);
   if (entry) entry.windowId = selector.id;
@@ -123,6 +126,7 @@ browser.windows.onRemoved.addListener((id) => {
   for (const [captureId, entry] of captures) {
     if (entry.windowId === id) captures.delete(captureId);
   }
+  selectorSources.delete(id);
 });
 
 browser.commands.onCommand.addListener((name) => {
@@ -130,13 +134,25 @@ browser.commands.onCommand.addListener((name) => {
 });
 
 async function openUrl(msg, sender) {
-  if (msg.fromSelector && sourceWindowId != null) {
-    await browser.tabs.create({ url: msg.url, windowId: sourceWindowId });
-    await browser.windows.update(sourceWindowId, { focused: true });
+  const senderWindowId = sender.tab && sender.tab.windowId;
+  if (msg.fromSelector) {
+    const source = selectorSources.get(senderWindowId);
+    if (source != null) {
+      try {
+        await browser.tabs.create({ url: msg.url, windowId: source });
+        await browser.windows.update(source, { focused: true });
+        return;
+      } catch (e) {
+        // The window the scan started from has been closed.
+        selectorSources.delete(senderWindowId);
+      }
+    }
+    // Let Firefox place the tab, never the selector popup the message came from.
+    await browser.tabs.create({ url: msg.url });
     return;
   }
   const options = { url: msg.url };
-  if (sender.tab) options.windowId = sender.tab.windowId;
+  if (senderWindowId != null) options.windowId = senderWindowId;
   await browser.tabs.create(options);
 }
 
