@@ -3,6 +3,7 @@ const COMMAND = "scan-qr";
 let pendingCapture = null;
 let sourceWindowId = null;
 let settingsWindowId = null;
+let lastNormalWindowId = null;
 
 function notify(message, title) {
   return browser.notifications.create({
@@ -13,9 +14,30 @@ function notify(message, title) {
   });
 }
 
-async function startScan(tab) {
+// Both the shortcut and the menu can fire while one of our own popup windows holds
+// focus, and for a background script "currentWindow" means the last focused window
+// of any type. Target the browser window the user came from instead, or the add-on
+// ends up scanning its own settings dialog.
+async function scanTarget() {
+  if (lastNormalWindowId != null) {
+    const [remembered] = await browser.tabs.query({
+      active: true, windowId: lastNormalWindowId
+    });
+    if (remembered) return remembered;
+  }
+  const [current] = await browser.tabs.query({
+    active: true, windowType: "normal", currentWindow: true
+  });
+  if (current) return current;
+  const [any] = await browser.tabs.query({ active: true, windowType: "normal" });
+  return any;
+}
+
+async function startScan() {
+  const tab = await scanTarget();
   if (!tab) {
-    [tab] = await browser.tabs.query({ active: true, currentWindow: true });
+    notify("No page to scan.");
+    return;
   }
   try {
     await browser.tabs.executeScript(tab.id, { file: "vendor/jsqr.js" });
@@ -67,8 +89,19 @@ async function openSettings() {
   settingsWindowId = win.id;
 }
 
+browser.windows.onFocusChanged.addListener(async (windowId) => {
+  if (windowId === browser.windows.WINDOW_ID_NONE) return;
+  try {
+    const win = await browser.windows.get(windowId);
+    if (win.type === "normal") lastNormalWindowId = windowId;
+  } catch (e) {
+    // The window went away between the event and the lookup.
+  }
+});
+
 browser.windows.onRemoved.addListener((id) => {
   if (id === settingsWindowId) settingsWindowId = null;
+  if (id === lastNormalWindowId) lastNormalWindowId = null;
 });
 
 browser.commands.onCommand.addListener((name) => {
