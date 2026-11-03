@@ -46,8 +46,16 @@ async function startScan() {
     return;
   }
   try {
-    await browser.tabs.executeScript(tab.id, { file: "vendor/jsqr.js" });
-    await browser.tabs.executeScript(tab.id, { file: "scan-core.js" });
+    // Also the gate for pages Firefox will not inject into: the probe throws
+    // first, and a navigation gives a fresh context where it reads false again,
+    // so there is nothing to invalidate.
+    const [loaded] = await browser.tabs.executeScript(tab.id, {
+      code: "typeof jsQR === 'function' && typeof QRScanCore === 'object'"
+    });
+    if (!loaded) {
+      await browser.tabs.executeScript(tab.id, { file: "vendor/jsqr.js" });
+      await browser.tabs.executeScript(tab.id, { file: "scan-core.js" });
+    }
     await browser.tabs.executeScript(tab.id, { file: "content.js" });
   } catch (e) {
     await captureFallback(tab);
